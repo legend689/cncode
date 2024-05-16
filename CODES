@@ -1,0 +1,938 @@
+SOCKET PROGRAMMING-
+*********Server-side Code – 
+import java.net.*;
+import java.io.*;
+
+public class Server {
+    public static void main(String[] args) {
+        try {
+            ServerSocket server = new ServerSocket(3001); // Create a server socket on port 3001
+            Socket s = server.accept(); // Wait for a client to connect
+            System.out.println("Connected!!!"); // Print a message when connected
+            DataOutputStream dos = new DataOutputStream(s.getOutputStream()); // Create a DataOutputStream to send data to the client
+            dos.writeUTF("Hello!!!!"); // Send a message to the client
+        } catch (Exception e) {
+            e.getMessage(); // Print any exceptions that occur
+        }
+    }
+}
+********Client-Side Code-
+import java.net.*;
+import java.io.*;
+
+public class Client {
+    public static void main(String[] args) {
+        try {
+            Socket s = new Socket("192.168.214.219", 3001); // Connect to the server at IP address "192.168.214.219" on port 3001
+            DataInputStream dis = new DataInputStream(s.getInputStream()); // Create a DataInputStream to receive data from the server
+            String msg = dis.readUTF(); // Read the message sent by the server
+            System.out.println(msg); // Print the received message
+        } catch(Exception e) {
+            e.getMessage(); // Print any exceptions that occur
+        }
+    }
+}
+********************************************************
+CLASS OF IP ADDRESS- 
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+void extractIpAddress(unsigned char *sourceString, short *ipAddress) {
+    unsigned short len = 0;
+    unsigned char oct[4] = {0}, cnt = 0, cnt1 = 0, buf[5];
+    
+    len = strlen((const char *)sourceString);
+    for (int i = 0; i < len; i++) {
+        if (sourceString[i] != '.') {
+            buf[cnt++] = sourceString[i];
+        }
+        if (sourceString[i] == '.' || i == len - 1) {
+            buf[cnt] = '\0';
+            cnt = 0;
+            oct[cnt1++] = atoi((const char *)buf);
+        }
+    }
+    
+    ipAddress[0] = oct[0];
+    ipAddress[1] = oct[1];
+    ipAddress[2] = oct[2];
+    ipAddress[3] = oct[3];
+}
+
+int main() {
+    unsigned char ip[20] = {0};
+    short ipAddress[4];
+    
+    printf("Enter IP address (192.168.81.219 format): ");
+    scanf("%s", ip);
+    
+    extractIpAddress(ip, &ipAddress[0]);
+    
+    printf("\nIp Address: %03d. %03d. %03d. %03d\n", ipAddress[0], ipAddress[1], ipAddress[2], ipAddress[3]);
+    
+    if (ipAddress[0] >= 1 && ipAddress[0] <= 126) {
+        printf("Class A IP Address.\n");
+    } else if (ipAddress[0] >= 128 && ipAddress[0] <= 191) {
+        printf("Class B IP Address.\n");
+    } else if (ipAddress[0] >= 192 && ipAddress[0] <= 223) {
+        printf("Class C IP Address.\n");
+    } else if (ipAddress[0] >= 224 && ipAddress[0] <= 239) {
+        printf("Class D IP Address.\n");
+    } else if (ipAddress[0] >= 240 && ipAddress[0] <= 255) {
+        printf("Class E IP Address.\n");
+    } else {
+        printf("Invalid IP Address.\n");
+    }
+
+    if (ipAddress[0] == 10 || (ipAddress[0] == 172 && (ipAddress[1] >= 16 && ipAddress[1] <= 31)) || (ipAddress[0] == 192 && ipAddress[1] == 168)) {
+        printf("Private IP Address.\n");
+    } else {
+        printf("Public IP Address.\n");
+    }
+    
+    return 0;
+}
+****************************************************************
+ASCII CODES USING CRC-
+#include <iostream> 
+using namespace std; 
+
+int main() { 
+    int i, j, k, l; // Get Frame 
+    int fs; 
+    cout << "\n Enter Frame size: "; 
+    cin >> fs; 
+    int f[20]; 
+    cout << "\n Enter Frame:"; 
+    for (i = 0; i < fs; i++) { 
+        cin >> f[i]; 
+    } 
+
+    // Get Generator 
+    int gs; 
+    cout << "\n Enter Generator size: "; 
+    cin >> gs; 
+    int g[20]; 
+    cout << "\n Enter Generator:"; 
+    for (i = 0; i < gs; i++) { 
+        cin >> g[i]; 
+    } 
+
+    cout << "\n Sender Side:"; 
+    cout << "\n Frame: "; 
+    for (i = 0; i < fs; i++) { 
+        cout << f[i]; 
+    } 
+    cout << "\n Generator :"; 
+    for (i = 0; i < gs; i++) { 
+        cout << g[i]; 
+    } 
+
+    // Append 0's 
+    int rs = gs - 1; 
+    cout << "\n Number of 0's to be appended: " << rs; 
+    for (i = fs; i < fs + rs; i++) { 
+        f[i] = 0; 
+    } 
+    int temp[20]; 
+    for (i = 0; i < 20; i++) { 
+        temp[i] = f[i]; 
+    } 
+    cout << "\n Message after appending 0's :"; 
+    for (i = 0; i < fs + rs; i++) { 
+        cout << temp[i]; 
+    } 
+
+    // Division 
+    for (i = 0; i < fs; i++) { 
+        j = 0; 
+        k = i; 
+        // check whether it is divisible or not 
+        if (temp[k] >= g[j]) { 
+            for (j = 0, k = i; j < gs; j++, k++) { 
+                if ((temp[k] == 1 && g[j] == 1) || (temp[k] == 0 && g[j] == 0)) { 
+                    temp[k] = 0; 
+                } else { 
+                    temp[k] = 1; 
+                } 
+            } 
+        } 
+    } 
+
+    // CRC 
+    int crc[15]; 
+    for (i = 0, j = fs; i < rs; i++, j++) { 
+        crc[i] = temp[j]; 
+    } 
+    cout << "\n CRC bits: "; 
+    for (i = 0; i < rs; i++) { 
+        cout << crc[i]; 
+    } 
+
+    cout << "\n Transmitted Frame: "; 
+    int tf[15]; 
+    for (i = 0; i < fs; i++) { 
+        tf[i] = f[i]; 
+    } 
+    for (i = fs, j = 0; i < fs + rs; i++, j++) { 
+        tf[i] = crc[j]; 
+    } 
+    for (i = 0; i < fs + rs; i++) { 
+        cout << tf[i]; 
+    } 
+
+    cout << "\n Receiver side : "; 
+    cout << "\n Received Frame: "; 
+    for (i = 0; i < fs + rs; i++) { 
+        cout << tf[i]; 
+    } 
+    for (i = 0; i < fs + rs; i++) { 
+        temp[i] = tf[i]; 
+    } 
+
+    // Division 
+    for (i = 0; i < fs + rs; i++) { 
+        j = 0; 
+        k = i; 
+        if (temp[k] >= g[j]) { 
+            for (j = 0, k = i; j < gs; j++, k++) { 
+                if ((temp[k] == 1 && g[j] == 1) || (temp[k] == 0 && g[j] == 0)) { 
+                    temp[k] = 0; 
+                } else { 
+                    temp[k] = 1; 
+                } 
+            } 
+        } 
+    } 
+
+    cout << "\n Reaminder: "; 
+    int rrem[15]; 
+    for (i = fs, j = 0; i < fs + rs; i++, j++) { 
+        rrem[j] = temp[i]; 
+    } 
+    for (i = 0; i < rs; i++) { 
+        cout << rrem[i]; 
+    } 
+    int flag = 0; 
+    for (i = 0; i < rs; i++) { 
+        if (rrem[i] != 0) { 
+            flag = 1; 
+        } 
+    } 
+    if (flag == 0) { 
+        cout << "\n Since Remainder Is 0 Hence Message Transmitted From Sender To Receriver Is Correct"; 
+    } else { 
+        cout << "\n Since Remainder Is Not 0 Hence Message Transmitted From Sender To Receriver Contains Error"; 
+    } 
+    return 0; 
+}
+***************************************************
+ASCII CODES USING HAMMING CODES-
+#include <iostream> 
+using namespace std; 
+
+int main() { 
+    int data[10]; 
+    int dataatrec[10], c, c1, c2, c3, i; 
+    
+    cout << "Enter 4 bits of data one by one\n"; 
+    cin >> data[7]; 
+    cin >> data[6]; 
+    cin >> data[5]; 
+    cin >> data[3]; 
+
+    // Calculation of even parity 
+    data[4] = data[5] ^ data[6] ^ data[7]; 
+    data[2] = data[3] ^ data[6] ^ data[7]; 
+    data[1] = data[3] ^ data[5] ^ data[7]; 
+
+    cout << "\nEncoded data is\n"; 
+    for (i = 1; i <= 7; i++) 
+        cout << data[i]; 
+
+    cout << "\n\nEnter received data bits one by one\n"; 
+    for (i = 1; i <= 7; i++) 
+        cin >> dataatrec[i]; 
+
+    c1 = dataatrec[1] ^ dataatrec[3] ^ dataatrec[5] ^ dataatrec[7]; 
+    c2 = dataatrec[2] ^ dataatrec[3] ^ dataatrec[6] ^ dataatrec[7]; 
+    c3 = dataatrec[4] ^ dataatrec[5] ^ dataatrec[6] ^ dataatrec[7]; 
+    c = c3 * 4 + c2 * 2 + c1; 
+
+    if (c == 0) { 
+        cout << "\ncongratulations there is no error: "; 
+    } else { 
+        cout << "\nerror on the position: " << c; 
+        cout << "\nCorrect message is:"; 
+        
+        if (dataatrec[c] == 0) 
+            dataatrec[c] = 1; 
+        else 
+            dataatrec[c] = 0; 
+        
+        for (i = 1; i <= 7; i++) { 
+            cout << dataatrec[i]; 
+        } 
+    } 
+    return 0; 
+}
+*************************************************
+GO BACK N SLIDING-
+import java.io.*;
+
+public class GoBackN {
+    public static void main(String args[]) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        
+        System.out.println("Please enter the No. of Frames: ");
+        int frames = Integer.parseInt(br.readLine());
+        
+        System.out.println("Please enter the Window Size: ");
+        int window = Integer.parseInt(br.readLine());
+        
+        boolean loop = true;
+        int sent = 0;
+        
+        while (loop) {
+            for (int i = sent; i < Math.min(sent + window, frames); i++) {
+                System.out.println("Frame " + i + " has been sent.");
+            }
+            
+            for (int i = sent; i < Math.min(sent + window, frames); i++) {
+                System.out.println("Frame " + (i + 1) + " acknowledgement sent.");
+            }
+            
+            System.out.println("Please enter the Acknowledgement not received.");
+            int ack = Integer.parseInt(br.readLine());
+            
+            if (ack == frames) {
+                loop = false;
+            } else {
+                sent = ack;
+            }
+        }
+    }
+}
+**********************************************
+SELECTIVE REPEAT MODES SLIDING WINDOW PROTOCOL-
+import java.io.*;
+
+public class Selective {
+    public static void main(String args[]) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        
+        System.out.println("Please enter the No. of Frames: ");
+        int frames = Integer.parseInt(br.readLine());
+        
+        System.out.println("Please enter the Window Size: ");
+        int window = Integer.parseInt(br.readLine());
+        
+        int count = 0;
+        boolean loop = true;
+        int sent = 0;
+        
+        while (loop) {
+            for (int i = sent; i < Math.min(sent + window, frames); i++) {
+                System.out.println("Frame " + i + " has been sent.");
+            }
+            
+            for (int i = sent; i < Math.min(sent + window, frames); i++) {
+                System.out.println("Frame " + (i + 1) + " acknowledgement sent.");
+            }
+            
+            System.out.println("Please enter the Acknowledgement not received.");
+            int ack = Integer.parseInt(br.readLine());
+            System.out.println("Frame " + ack + " has been sent.");
+            
+            if (ack == frames) {
+                loop = false;
+            } else {
+                sent = count += window;
+            }
+        }
+    }
+}
+*****************************************************
+SUBNETTING AND SUBNET MASKS-
+import java.io.*;
+import java.net.InetAddress;
+
+public class Subnet1 {
+    public static void main(String[] args) throws IOException {
+        System.out.println("ENTER IP:");
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        String ip = br.readLine();
+        String checkclass = ip.substring(0, 3);
+        int cc = Integer.parseInt(checkclass);
+        String mask = null;
+        
+        if (cc > 0) {
+            if (cc <= 127) {
+                mask = "255.0.0.0";
+                System.out.println("Class A IP Address");
+                System.out.println("SUBNET MASK:\n" + mask);
+            }
+            if (cc >= 128 && cc <= 191) {
+                mask = "255.255.0.0";
+                System.out.println("Class B IP Address");
+                System.out.println("SUBNET MASK:\n" + mask);
+            }
+            if (cc >= 192 && cc <= 223) {
+                mask = "255.255.255.0";
+                System.out.println("Class C IP Address");
+                System.out.println("SUBNET MASK:\n" + mask);
+            }
+            if (cc >= 224 && cc <= 239) {
+                mask = "255.0.0.0";
+                System.out.println("Class D IP Address Used for multicasting");
+            }
+            if (cc >= 240 && cc <= 254) {
+                mask = "255.0.0.0";
+                System.out.println("Class E IP Address Experimental Use");
+            }
+        }
+        
+        String networkAddr = "";
+        String lastAddr = "";
+        String[] ipAddrParts = ip.split("\\.");
+        String[] maskParts = mask.split("\\.");
+        
+        for (int i = 0; i < 4; i++) {
+            int x = Integer.parseInt(ipAddrParts[i]);
+            int y = Integer.parseInt(maskParts[i]);
+            int z = x & y;
+            networkAddr += z + ".";
+            int w = z | (y ^ 255);
+            lastAddr += w + ".";
+        }
+        
+        System.out.println("First IP of block: " + networkAddr);
+        System.out.println("Last IP of block: " + lastAddr);
+    }
+}
+************************************************
+TCP socket for wired network for following:
+ 1. Say Hello to Each other              2. File transfer 
+*****Server.c****
+#include <stdio.h>
+#include <winsock2.h>
+
+#define PORT 8080
+#define BUFFER_SIZE 1024
+
+int main() {
+    WSADATA wsa;
+    SOCKET server_socket, client_socket;
+    struct sockaddr_in server_addr, client_addr;
+    char buffer[BUFFER_SIZE] = {0};
+    FILE *file;
+    long file_size;
+
+    // Initialize Winsock
+    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0) {
+        printf("WSAStartup failed\n");
+        return 1;
+    }
+
+    // Creating socket
+    if ((server_socket = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) {
+        printf("Socket creation failed\n");
+        return 1;
+    }
+
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+    server_addr.sin_port = htons(PORT);
+
+    // Binding socket to port
+    if (bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) == SOCKET_ERROR) {
+        printf("Bind failed\n");
+        return 1;
+    }
+
+    // Listening for incoming connections
+    if (listen(server_socket, 3) == SOCKET_ERROR) {
+        printf("Listen failed\n");
+        return 1;
+    }
+
+    printf("Server listening on port %d\n", PORT);
+
+    int client_addr_len = sizeof(client_addr);
+
+    // Accepting incoming connection
+    if ((client_socket = accept(server_socket, (struct sockaddr *)&client_addr, &client_addr_len)) == INVALID_SOCKET) {
+        printf("Accept failed\n");
+        return 1;
+    }
+
+    printf("Client connected\n");
+
+    // Send "Hello" message to client
+    send(client_socket, "Hello from server", strlen("Hello from server"), 0);
+    printf("Hello message sent to client\n");
+
+    // Receive "Hello" message from client
+    memset(buffer, 0, sizeof(buffer));
+    recv(client_socket, buffer, BUFFER_SIZE, 0);
+    printf("Message from client: %s\n", buffer);
+
+    // Open file for transfer
+    file = fopen("example.txt", "rb");
+    if (file == NULL) {
+        printf("File opening failed\n");
+        return 1;
+    }
+
+    // Get file size
+    fseek(file, 0, SEEK_END);
+    file_size = ftell(file);
+    rewind(file);
+
+    // Send file size to client
+    send(client_socket, (char *)&file_size, sizeof(file_size), 0);
+
+    // Transfer file content to client
+    while (!feof(file)) {
+        fread(buffer, sizeof(char), BUFFER_SIZE, file);
+        send(client_socket, buffer, BUFFER_SIZE, 0);
+        memset(buffer, 0, BUFFER_SIZE);
+    }
+
+    printf("File sent to client\n");
+
+    fclose(file);
+    closesocket(server_socket);
+    WSACleanup();
+    return 0;
+}
+****CLIENT*****
+#include <stdio.h>
+#include <winsock2.h>
+
+#define PORT 8080
+#define BUFFER_SIZE 1024
+
+int main() {
+    WSADATA wsa;
+    SOCKET client_socket;
+    struct sockaddr_in server_addr;
+    char buffer[BUFFER_SIZE] = {0};
+    FILE *file;
+    long file_size, received_size = 0;
+
+    // Initialize Winsock
+    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0) {
+        printf("WSAStartup failed\n");
+        return 1;
+    }
+
+    // Creating socket
+    if ((client_socket = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) {
+        printf("Socket creation failed\n");
+        return 1;
+    }
+
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    server_addr.sin_port = htons(PORT);
+
+    // Connecting to server
+    if (connect(client_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) == SOCKET_ERROR) {
+        printf("Connection failed\n");
+        return 1;
+    }
+
+    printf("Connected to server\n");
+
+    // Receive "Hello" message from server
+    memset(buffer, 0, sizeof(buffer));
+    recv(client_socket, buffer, BUFFER_SIZE, 0);
+    printf("Message from server: %s\n", buffer);
+
+    // Send "Hello" message to server
+    send(client_socket, "Hello from client", strlen("Hello from client"), 0);
+    printf("Hello message sent to server\n");
+
+    // Receive file size from server
+    recv(client_socket, (char *)&file_size, sizeof(file_size), 0);
+
+    // Open file for writing
+    file = fopen("received_file.txt", "wb");
+    if (file == NULL) {
+        printf("File opening failed\n");
+        return 1;
+    }
+
+    // Receive file content from server
+    while (received_size < file_size) {
+        int bytes_received = recv(client_socket, buffer, BUFFER_SIZE, 0);
+        fwrite(buffer, sizeof(char), bytes_received, file);
+        received_size += bytes_received;
+    }
+
+    printf("File received from server\n");
+
+    fclose(file);
+    closesocket(client_socket);
+    WSACleanup();
+    return 0;
+}
+****************************************************
+A PROGRAM USING UDP SOCKETS TO ENABLE FILE TRANSFERS-
+******SERVER*****-
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <string.h>
+#include <stdlib.h>
+
+#define maxlen 70000
+#define mlen 100000
+
+int main() {
+    char fileName[100];
+    char filebuffer[2000], caufile[maxlen];
+    char *vfilep;
+    int aufile[700000], vfile[mlen];
+    int sd, connfd, len;
+
+    for (int i = 0; i <= 100; i++) {
+        fileName[i] = '\0';
+    }
+
+    struct sockaddr_in servaddr, cliaddr;
+
+    sd = socket(AF_INET, SOCK_DGRAM, 0);
+
+    if (sd == -1) {
+        printf("socket not created in server\n");
+        exit(0);
+    } else {
+        printf("socket created in server\n");
+    }
+
+    bzero(&servaddr, sizeof(servaddr));
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = INADDR_ANY;
+    servaddr.sin_port = htons(8000);
+    memset(&(servaddr.sin_zero), '\0', 8);
+
+    if (bind(sd, (struct sockaddr *)&servaddr, sizeof(servaddr)) != 0)
+        printf("Not binded\n");
+    else
+        printf("Binded\n");
+
+    len = sizeof(cliaddr);
+    int choice = 1;
+
+    while (1) {
+        char num;
+        recvfrom(sd, &num, sizeof(num), 0, (struct sockaddr *)&cliaddr, &len);
+        choice = num;
+
+        switch (choice) {
+            case 1:
+                recvfrom(sd, fileName, 1024, 0, (struct sockaddr *)&cliaddr, &len);
+                printf("NAME OF TEXT FILE RECEIVED : %s\n", fileName);
+                FILE *fp;
+                printf("Contents in the received text file : \n");
+                recvfrom(sd, filebuffer, 1024, 0, (struct sockaddr *)&cliaddr, &len);
+                printf("%s\n", filebuffer);
+                int fsize = strlen(filebuffer);
+                fp = fopen(fileName, "w");
+
+                if (fp) {
+                    fwrite(filebuffer, fsize, 1, fp);
+                    printf("File received successfully.\n");
+                } else {
+                    printf("Cannot create to output file.\n");
+                }
+
+                memset(fileName, '\0', sizeof(fileName));
+                fclose(fp);
+                break;
+
+            case 2:
+                recvfrom(sd, fileName, 1024, 0, (struct sockaddr *)&cliaddr, &len);
+                printf("NAME OF AUDIO FILE RECEIVED : %s\n", fileName);
+                FILE *afp;
+                int numbytes;
+                afp = fopen(fileName, "w");
+                size_t afsize;
+                afsize = recvfrom(sd, aufile, 700000, 0, (struct sockaddr *)&cliaddr, &len);
+
+                if (afp) {
+                    fwrite(aufile, afsize, 1, afp);
+                    printf("File received successfully.\n");
+                } else {
+                    printf("Cannot open output file.\n");
+                }
+
+                memset(fileName, '\0', sizeof(fileName));
+                fclose(afp);
+                break;
+
+            case 3:
+                recvfrom(sd, fileName, 1024, 0, (struct sockaddr *)&cliaddr, &len);
+                printf("VIDEO FILE NAME RECEIVED : %s\n", fileName);
+                FILE *vfp;
+                vfp = fopen(fileName, "w");
+                size_t vfsize;
+                vfsize = recvfrom(sd, vfile, 100000, 0, (struct sockaddr *)&cliaddr, &len);
+
+                if (vfp) {
+                    fwrite(vfile, vfsize, 1, vfp);
+                    printf("File received successfully.\n");
+                } else {
+                    printf("Cannot open output file.\n");
+                }
+
+                fclose(vfp);
+                break;
+
+            case 4:
+                close(sd);
+                break;
+        }
+    }
+
+    return (0);
+}
+*****CLIENT*****-
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+
+int main() {
+    int fd;
+    char fileName[2000], afileName[2000], vfileName[2000], file_buffer[2000], c, caufile[70000], aufile[700000], vfile[1000000];
+    struct sockaddr_in servaddr;
+
+    if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+        perror("socket creation failed");
+        exit(EXIT_FAILURE);
+    }
+
+    memset(&servaddr, 0, sizeof(servaddr));
+    bzero(&servaddr, sizeof(servaddr));
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_port = htons(8000);
+    servaddr.sin_addr.s_addr = INADDR_ANY;
+
+    int choice = 1;
+
+    while (choice != 4) {
+        printf("ENTER \n 1.TEXT \n 2.AUDIO \n 3.VIDEO\n4.EXIT");
+        scanf("%d", &choice);
+
+        char num = choice;
+        sendto(fd, &num, sizeof(num), 0, (struct sockaddr *)&servaddr, sizeof(struct sockaddr));
+
+        switch (choice) {
+            case 1:
+                printf("Enter text file name to send : \n");
+                scanf("%s", fileName);
+                sendto(fd, fileName, strlen(fileName), 0, (struct sockaddr *)&servaddr, sizeof(struct sockaddr));
+                FILE *fp;
+                fp = fopen(fileName, "r");
+
+                if (fp) {
+                    printf("Reading file contents.\n");
+                    fseek(fp, 0, SEEK_END);
+                    size_t file_size = ftell(fp);
+                    fseek(fp, 0, SEEK_SET);
+
+                    if (fread(file_buffer, file_size, 1, fp) <= 0) {
+                        printf("Unable to copy file into buffer or empty file.\n");
+                        exit(1);
+                    }
+                } else {
+                    printf("Cannot open file.\n");
+                    exit(0);
+                }
+
+                printf("FILE CONTENTS TO SEND : %s\n", file_buffer);
+
+                if (sendto(fd, file_buffer, strlen(file_buffer), 0, (struct sockaddr *)&servaddr, sizeof(struct sockaddr)) < 0) {
+                    printf("FILE WAS NOT SENT\n");
+                } else {
+                    printf("FILE SENT\n");
+                }
+
+                fclose(fp);
+                break;
+
+            case 2:
+                printf("Enter audio file name to send : \n");
+                scanf("%s", afileName);
+                sendto(fd, afileName, strlen(afileName), 0, (struct sockaddr *)&servaddr, sizeof(struct sockaddr));
+                FILE *afp;
+                afp = fopen(afileName, "r");
+                fseek(afp, 0, SEEK_END);
+                size_t afsize = ftell(afp);
+                fseek(afp, 0, SEEK_SET);
+
+                if (afp) {
+                    printf("Reading file contents.\n");
+
+                    if (fread(aufile, afsize, 1, afp) <= 0) {
+                        printf("Unable to copy file into buffer or empty file.\n");
+                        exit(1);
+                    }
+                } else {
+                    printf("Could not read audio file.\n");
+                    exit(0);
+                }
+
+                if (sendto(fd, aufile, afsize, 0, (struct sockaddr *)&servaddr, sizeof(struct sockaddr)) < 0) {
+                    printf("FILE WAS NOT SENT\n");
+                } else {
+                    printf("FILE SENT\n");
+                }
+
+                fclose(afp);
+                break;
+
+            case 3:
+                printf("Enter video file name to send : \n");
+                scanf("%s", vfileName);
+                sendto(fd, vfileName, strlen(vfileName), 0, (struct sockaddr *)&servaddr, sizeof(struct sockaddr));
+                FILE *vfp;
+                vfp = fopen(vfileName, "r");
+                fseek(vfp, 0, SEEK_END);
+                size_t vfsize = ftell(vfp);
+                fseek(vfp, 0, SEEK_SET);
+
+                if (vfp) {
+                    if (fread(vfile, 1, vfsize, vfp) <= 0) {
+                        printf("No contents or error reading file \n");
+                    }
+                } else {
+                    printf("Could not read audio file.\n");
+                    exit(0);
+                }
+
+                if (sendto(fd, vfile, vfsize, 0, (struct sockaddr *)&servaddr, sizeof(struct sockaddr)) < 0) {
+                    printf("FILE WAS NOT SENT\n");
+                } else {
+                    printf("FILE SENT\n");
+                }
+
+                fclose(vfp);
+                break;
+
+            case 4:
+                close(fd);
+                break;
+        }
+    }
+
+    return 0;
+}
+***********************************************************
+Write a program to implement:
+
+a. Network Routing: Shortest path routing, AODV 
+
+#include <stdio.h>
+#include <limits.h>
+
+// Number of nodes in the network
+#define V 6
+
+// Function to find the node with the shortest distance
+int minDistance(int dist[], int visited[]) {
+    int min = INT_MAX, min_index;
+
+    for (int v = 0; v < V; v++) {
+        if (visited[v] == 0 && dist[v] <= min) {
+            min = dist[v];
+            min_index = v;
+        }
+    }
+
+    return min_index;
+}
+
+// Function to print the path from source to destination
+void printPath(int parent[], int j) {
+    if (parent[j] == -1)
+        return;
+
+    printPath(parent, parent[j]);
+    printf("%d ", j);
+}
+
+// Function to print the shortest path from source to destination
+void printSolution(int dist[], int n, int parent[], int src, int dest) {
+    printf("Shortest path from %d to %d: ", src, dest);
+    printf("%d ", src);
+    printPath(parent, dest);
+    printf("\n");
+}
+
+// Function to implement AODV routing
+void AODV(int graph[V][V], int src, int dest) {
+    int dist[V];        // Array to store shortest distance from source to i
+    int visited[V];     // Array to mark visited nodes
+    int parent[V];      // Array to store the shortest path tree
+
+    // Initialize all distances as INFINITE and visited[] as 0
+    for (int i = 0; i < V; i++) {
+        dist[i] = INT_MAX;
+        visited[i] = 0;
+        parent[i] = -1;
+    }
+
+    // Distance of source vertex from itself is always 0
+    dist[src] = 0;
+
+    // Find shortest path for all vertices
+    for (int count = 0; count < V - 1; count++) {
+        int u = minDistance(dist, visited);
+
+        // Mark the picked node as visited
+        visited[u] = 1;
+
+        // Update dist value of the adjacent vertices of the picked node.
+        for (int v = 0; v < V; v++) {
+            if (!visited[v] && graph[u][v] && dist[u] != INT_MAX && dist[u] + graph[u][v] < dist[v]) {
+                parent[v] = u;
+                dist[v] = dist[u] + graph[u][v];
+            }
+        }
+    }
+
+    // Print the shortest path
+    printSolution(dist, V, parent, src, dest);
+}
+
+int main() {
+    // Example graph representing the network topology
+    int graph[V][V] = {
+        {0, 1, 4, 0, 0, 0},
+        {1, 0, 4, 2, 7, 0},
+        {4, 4, 0, 3, 5, 0},
+        {0, 2, 3, 0, 4, 6},
+        {0, 7, 5, 4, 0, 7},
+        {0, 0, 0, 6, 7, 0}
+    };
+
+    // Source and destination nodes
+    int src = 0, dest = 5;
+
+    // Run AODV routing algorithm
+    AODV(graph, src, dest);
+
+    return 0;
+}
